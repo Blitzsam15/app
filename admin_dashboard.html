@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Shop dashboard | Aunty Bunmi's Shop{% endblock %}
+{% block body_class %}admin-body{% endblock %}
+{% block content %}
+<main class="dashboard">
+  <header class="dashboard-header">
+    <a class="brand" href="{{ url_for('index') }}"><span class="brand-mark">AB</span><span>Aunty Bunmi's <small>shop dashboard</small></span></a>
+    <div class="dashboard-actions"><a class="admin-link" href="{{ url_for('index') }}">View shop ↗</a><form method="post" action="{{ url_for('admin_logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="logout-button">Sign out</button></form></div>
+  </header>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash-stack">{% for category, message in messages %}<p class="flash {{ category }}">{{ message }}</p>{% endfor %}</div>{% endif %}
+  {% endwith %}
+  <section class="dashboard-intro"><span class="eyebrow">YOUR LITTLE SHOP, ALL IN ONE PLACE</span><h1>Good morning, shopkeeper <span>✦</span></h1><p>Update your products, payment details, and incoming orders.</p></section>
+  <div class="dashboard-grid">
+    <section class="admin-card settings-card">
+      <div class="admin-card-heading"><span class="admin-icon green-icon">₦</span><div><h2>Shop & payment details</h2><p>These details are shown to buyers at checkout.</p></div></div>
+      <form method="post" action="{{ url_for('update_settings') }}" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>Egg price <span>per tray, in naira</span><div class="input-prefix"><b>₦</b><input type="number" min="1" step="1" name="egg_price" value="{{ settings.egg_price }}" required></div></label>
+        <label>Bank name<input name="bank_name" value="{{ settings.bank_name }}" required></label>
+        <label>Account number<input name="account_number" value="{{ settings.account_number }}" required></label>
+        <label>Account name<input name="account_name" value="{{ settings.account_name }}" required></label>
+        <label>WhatsApp number <span>with country code, digits only</span><input name="whatsapp" type="tel" value="{{ settings.whatsapp }}" placeholder="2348012345678"></label>
+        <button class="button button-green" type="submit">Save shop details <span>✓</span></button>
+      </form>
+    </section>
+
+    <section class="admin-card add-product-card">
+      <div class="admin-card-heading"><span class="admin-icon blue-icon">✦</span><div><h2>Add kids' ware</h2><p>Add a photo, product name, and price.</p></div></div>
+      <form method="post" action="{{ url_for('add_product') }}" enctype="multipart/form-data" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>Product name<input name="name" maxlength="100" required placeholder="e.g. Rainbow building blocks"></label>
+        <label>Category<select name="category" required><option value="" disabled selected>Choose a category</option>{% for category in categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></label>
+        <label>Price <span>in naira</span><div class="input-prefix"><b>₦</b><input type="number" min="1" step="1" name="price" required placeholder="4500"></div></label>
+        <label class="photo-upload">Product photo<input type="file" name="photo" accept="image/png,image/jpeg,image/webp" required><small>JPG, PNG or WebP · maximum 5 MB</small></label>
+        <button class="button button-blue" type="submit">Add to the shop <span>＋</span></button>
+      </form>
+    </section>
+  </div>
+
+  <section class="admin-card admin-section password-card">
+    <div class="admin-card-heading"><span class="admin-icon orange-icon">🔒</span><div><h2>Change admin password</h2><p>Confirm your current password and choose a new password with at least 12 characters.</p></div></div>
+    <form method="post" action="{{ url_for('change_admin_password') }}" class="admin-form password-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label>Current password<input type="password" name="current_password" required autocomplete="current-password"></label>
+      <label>New password<input type="password" name="new_password" required minlength="12" maxlength="256" autocomplete="new-password"></label>
+      <label>Confirm new password<input type="password" name="confirm_password" required minlength="12" maxlength="256" autocomplete="new-password"></label>
+      <button class="button button-green" type="submit">Change password <span>✓</span></button>
+    </form>
+  </section>
+
+  <section class="admin-card admin-section">
+    <div class="admin-card-heading"><span class="admin-icon pink-icon">♡</span><div><h2>Kids' wares <span class="count-pill">{{ products|length }}</span></h2><p>Edit a product's details or remove it from the shop.</p></div></div>
+    {% if products %}
+      <div class="admin-product-list">
+        {% for product in products %}
+          <article class="admin-product-row">
+            <img src="{{ url_for('static', filename=product.photo) }}" alt="">
+            <form method="post" action="{{ url_for('edit_product', product_id=product.id) }}" class="inline-edit-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <label class="visually-hidden" for="product-name-{{ product.id }}">Product name</label><input id="product-name-{{ product.id }}" name="name" value="{{ product.name }}" required>
+              <label class="visually-hidden" for="product-category-{{ product.id }}">Category</label><select id="product-category-{{ product.id }}" name="category" required>{% for category in categories %}<option value="{{ category }}" {% if product.category == category %}selected{% endif %}>{{ category }}</option>{% endfor %}</select>
+              <label class="visually-hidden" for="product-price-{{ product.id }}">Price in naira</label><div class="input-prefix"><b>₦</b><input id="product-price-{{ product.id }}" type="number" min="1" name="price" value="{{ product.price }}" required></div>
+              <button class="small-button" type="submit">Save</button>
+            </form>
+            <form method="post" action="{{ url_for('delete_product', product_id=product.id) }}" onsubmit="return confirm('Delete this product from the shop?')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="delete-button" type="submit" aria-label="Delete {{ product.name }}">Delete</button>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}<div class="admin-empty">Your kids' wares will appear here after you add a product above.</div>{% endif %}
+  </section>
+
+  <section class="admin-card admin-section" id="orders">
+    <div class="admin-card-heading"><span class="admin-icon orange-icon">↗</span><div><h2>Orders <span class="count-pill">{{ orders|length }}</span></h2><p>Review payment receipts and update order status.</p></div></div>
+    {% if orders %}
+      <div class="orders-list">
+        {% for order in orders %}
+          <article class="order-row">
+            <div class="order-main">
+              <div class="order-buyer"><strong>{{ order.buyer_name }}</strong><span>{{ order.phone }}</span><small>Order #{{ order.id }} · {{ order.created_at }}</small></div>
+              <div class="order-items">{% for item in order["items"] %}<span>{{ item.quantity }} × {{ item.name }} <small>({{ item.unit_price|naira }} each)</small></span>{% endfor %}</div>
+              <strong class="order-amount">{{ order.total|naira }}</strong>
+              <span class="status-pill {{ 'paid' if order.status == 'Paid' else 'pending' }}">{{ order.status }}</span>
+            </div>
+            <div class="order-actions">
+              {% if order.receipt_image %}<a href="{{ url_for('admin_receipt', filename=order.receipt_image) }}" target="_blank" rel="noopener" class="receipt-link">View receipt ↗</a>{% else %}<span class="receipt-missing">Receipt not uploaded</span>{% endif %}
+              {% if order.status != 'Paid' %}<form method="post" action="{{ url_for('mark_order_paid', order_id=order.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="small-button paid-button" type="submit">Mark as paid ✓</button></form>{% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}<div class="admin-empty">No orders yet. New customer orders will show up here.</div>{% endif %}
+  </section>
+  <footer class="dashboard-footer">Aunty Bunmi's Shop <span>·</span> A little shop, lots of love.</footer>
+</main>
+<script type="application/json" id="known-receipts">{{ orders|selectattr('receipt_image')|map(attribute='receipt_image')|list|tojson }}</script>
+<div class="toast-stack" id="receipt-toast-stack" aria-live="polite" aria-relevant="additions"></div>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+{% endblock %}

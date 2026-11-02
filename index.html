@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}Aunty Bunmi's Shop | Farm Fresh & Little Treasures{% endblock %}
+{% block content %}
+<main class="storefront" id="storefront">
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('index') }}" aria-label="Aunty Bunmi's Shop home">
+      <span class="brand-mark">AB</span>
+      <span>Aunty Bunmi's <small>little shop, lots of love</small></span>
+    </a>
+    <nav class="side-switch" aria-label="Choose a shop">
+      <button class="side-tab active" type="button" data-side="eggs" aria-pressed="true">🥚 Eggs</button>
+      <button class="side-tab" type="button" data-side="kids" aria-pressed="false">🎈 Kids' wares</button>
+    </nav>
+    <a class="admin-link" href="{{ url_for('admin_login') }}">Shop admin <span aria-hidden="true">↗</span></a>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack">
+        {% for category, message in messages %}<p class="flash {{ category }}">{{ message }}</p>{% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="shop-panel egg-panel" data-panel="eggs">
+    <div class="hero eggs-hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="eyebrow-dot"></span> Fresh from our farm</span>
+        <h1>Good eggs.<br><em>Good mornings.</em></h1>
+        <p>Farm-fresh goodness, carefully gathered and ready for your family table.</p>
+        <a class="button button-green" href="#egg-product">Shop fresh eggs <span>↓</span></a>
+        <div class="hero-note"><span>✓</span> Freshly selected &nbsp;·&nbsp; Family approved</div>
+      </div>
+      <div class="hero-art egg-art">
+        <div class="sun-disc"></div>
+        <img src="{{ url_for('static', filename='images/egg-hero.svg') }}" alt="A basket of fresh farm eggs">
+        <span class="art-sticker">Fresh<br>every day!</span>
+      </div>
+      <span class="hero-plant plant-one">✳</span><span class="hero-plant plant-two">✿</span>
+    </div>
+    <div class="section-heading" id="egg-product">
+      <div><span class="eyebrow">STRAIGHT FROM THE FARM</span><h2>Our farm-fresh pick</h2></div>
+      <span class="section-note">Simple, fresh, and full of goodness.</span>
+    </div>
+    <article class="product-card egg-card">
+      <div class="product-image egg-product-image">
+        <img src="{{ url_for('static', filename='images/egg-basket.svg') }}" alt="Fresh brown and white eggs">
+        <span class="image-label">Farm fresh</span>
+      </div>
+      <div class="product-info">
+        <span class="product-category">🥚 FARM FRESH</span>
+        <h3>Fresh farm eggs</h3>
+        <p>Hand-selected eggs for breakfasts, baking, and all the good things.</p>
+        <div class="product-buy-row">
+          <strong class="price">{{ settings.egg_price|int|naira }} <small>/ tray</small></strong>
+          <button class="button button-green buy-button" type="button" data-item-type="eggs" data-item-name="Fresh farm eggs" data-price="{{ settings.egg_price }}">Buy eggs <span>→</span></button>
+        </div>
+      </div>
+      <div class="product-side-note">Packed<br>with care <span>♡</span></div>
+    </article>
+    <div class="promise-strip">
+      <span>🌱 Carefully selected</span><span>🚚 Local delivery available</span><span>💚 Goodness for your home</span>
+    </div>
+  </section>
+
+  <section class="shop-panel kids-panel" data-panel="kids" hidden>
+    <div class="hero kids-hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="eyebrow-dot"></span> Little things, big smiles</span>
+        <h1>For little people<br>with <em>big dreams.</em></h1>
+        <p>Fun finds and everyday favourites for the little stars in your life.</p>
+        <a class="button button-blue" href="#kids-products">Explore the collection <span>↓</span></a>
+        <div class="hero-note"><span>★</span> Picked with care &nbsp;·&nbsp; Made for play</div>
+      </div>
+      <div class="hero-art kids-art">
+        <div class="kids-sun"></div>
+        <img src="{{ url_for('static', filename='images/kids-hero.svg') }}" alt="Playful children's toys and gifts">
+        <span class="art-sticker">Little joys<br>inside!</span>
+      </div>
+      <span class="hero-plant kids-star-one">✦</span><span class="hero-plant kids-star-two">✿</span>
+    </div>
+    <div class="section-heading" id="kids-products">
+      <div><span class="eyebrow">THE LITTLE THINGS SHOP</span><h2>Find their new favourite</h2></div>
+      <span class="section-note">Bright picks for brighter little days.</span>
+    </div>
+    <nav class="category-slider" aria-label="Filter kids' wares by category">
+      <button class="category-button active" type="button" data-category-filter="All" aria-pressed="true">All</button>
+      {% for category in categories %}
+        <button class="category-button" type="button" data-category-filter="{{ category }}" aria-pressed="false">{{ category }}</button>
+      {% endfor %}
+    </nav>
+    {% if products %}
+      <div class="product-category-groups" id="product-category-groups">
+        {% for category in categories %}
+          {% set category_products = products|selectattr('category', 'equalto', category)|list %}
+          {% if category_products %}
+            <section class="product-category-group" data-category-group="{{ category }}">
+              <h3 class="category-heading">{{ category }} <span>{{ category_products|length }} {% if category_products|length == 1 %}item{% else %}items{% endif %}</span></h3>
+              <div class="product-grid">
+                {% for product in category_products %}
+                  <article class="product-card kids-card">
+                    <div class="product-image">
+                      <img src="{{ url_for('static', filename=product.photo) }}" alt="{{ product.name }}">
+                      <span class="image-label">Little favourite</span>
+                    </div>
+                    <div class="product-info">
+                      <span class="product-category">✦ {{ product.category|upper }} PICK</span>
+                      <h3>{{ product.name }}</h3>
+                      <div class="product-buy-row">
+                        <strong class="price">{{ product.price|naira }}</strong>
+                        <button class="button button-blue buy-button" type="button" data-item-type="product" data-product-id="{{ product.id }}" data-item-name="{{ product.name }}" data-price="{{ product.price }}">Buy <span>→</span></button>
+                      </div>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            </section>
+          {% endif %}
+        {% endfor %}
+        <p class="category-empty" hidden>No items in this category just yet. Try another category!</p>
+      </div>
+    {% else %}
+      <div class="empty-products"><span class="empty-sparkle">✦</span><h3>Lovely things are on their way!</h3><p>Check back soon for the latest little favourites.</p></div>
+    {% endif %}
+    <div class="kids-footer-note">Made for play, picked with love <span>♥</span></div>
+  </section>
+
+  <footer class="site-footer"><span>© {{ current_year }} Aunty Bunmi's Shop</span><span>Made with care in Nigeria <b>♥</b></span></footer>
+</main>
+
+<div class="modal-backdrop" id="order-modal" aria-hidden="true">
+  <section class="order-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+    <button class="modal-close" type="button" aria-label="Close">×</button>
+    <div class="dialog-kicker">YOUR LITTLE SHOPPING MOMENT</div>
+    <h2 id="dialog-title">Let's get your order started</h2>
+    <p class="dialog-description">Tell us where to send your order details.</p>
+    <div class="selected-item">
+      <span class="selected-icon" id="selected-icon">🥚</span>
+      <span><strong id="selected-name"></strong><small id="selected-unit"></small></span>
+      <strong id="selected-price"></strong>
+    </div>
+    <form id="order-form">
+      <input type="hidden" name="item_type">
+      <input type="hidden" name="product_id">
+      <label>Your name<input name="buyer_name" required maxlength="100" autocomplete="name" placeholder="e.g. Ada Okafor"></label>
+      <label>Phone number<input name="phone" required maxlength="30" type="tel" autocomplete="tel" placeholder="e.g. 0803 123 4567"></label>
+      <label>Quantity<input name="quantity" type="number" min="1" max="100" value="1" required></label>
+      <div class="order-total"><span>Total</span><strong id="order-total">₦0</strong></div>
+      <p class="form-error" id="order-error" role="alert"></p>
+      <button class="button button-green dialog-submit" type="submit">Continue to payment <span>→</span></button>
+    </form>
+  </section>
+</div>
+
+<div class="modal-backdrop" id="payment-modal" aria-hidden="true">
+  <section class="order-dialog payment-dialog" role="dialog" aria-modal="true" aria-labelledby="payment-title">
+    <button class="modal-close" type="button" aria-label="Close">×</button>
+    <div class="payment-icon">↗</div>
+    <div class="dialog-kicker">ORDER <span id="payment-order-id"></span> · PENDING</div>
+    <h2 id="payment-title">Transfer to complete</h2>
+    <p class="dialog-description">Transfer the exact total below. Your order is saved as pending until payment is confirmed.</p>
+    <div class="bank-card">
+      <span>PAYMENT DETAILS</span>
+      <div><small>Bank</small><strong id="bank-name"></strong></div>
+      <div><small>Account number</small><strong id="account-number"></strong></div>
+      <div><small>Account name</small><strong id="account-name"></strong></div>
+      <div class="bank-total"><small>Amount to transfer</small><strong id="payment-total"></strong></div>
+    </div>
+    <form id="receipt-form" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label class="receipt-label">Already transferred? Upload your receipt
+        <input type="file" name="receipt" accept="image/png,image/jpeg,image/webp" required>
+      </label>
+      <button class="button button-green dialog-submit" type="submit">Send payment receipt <span>✓</span></button>
+    </form>
+    <a class="whatsapp-button" id="whatsapp-link" href="#" target="_blank" rel="noopener" hidden>Send order details on WhatsApp ↗</a>
+    <p class="payment-footnote">Keep your transfer confirmation. We'll contact you on the phone number provided.</p>
+  </section>
+</div>
+{% endblock %}

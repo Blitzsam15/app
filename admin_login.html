@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Admin login | Aunty Bunmi's Shop{% endblock %}
+{% block body_class %}admin-body{% endblock %}
+{% block content %}
+<main class="login-page">
+  <a class="back-to-shop" href="{{ url_for('index') }}">← Back to the shop</a>
+  <section class="login-card">
+    <span class="login-mark">AB</span>
+    <span class="eyebrow">SHOP MANAGEMENT</span>
+    <h1>Welcome back</h1>
+    <p>Sign in to manage your shop and orders.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}{% for category, message in messages %}<p class="flash {{ category }}">{{ message }}</p>{% endfor %}{% endif %}
+    {% endwith %}
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label>Username<input name="username" required autocomplete="username" autofocus></label>
+      <label>Password<input name="password" type="password" required autocomplete="current-password"></label>
+      <button class="button button-green dialog-submit" type="submit">Sign in <span>→</span></button>
+    </form>
+    <small class="login-security">Your shop dashboard is private and protected.</small>
+  </section>
+</main>
+{% endblock %}
